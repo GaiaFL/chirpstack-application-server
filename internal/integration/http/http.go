@@ -64,7 +64,10 @@ func (i *Integration) send(url string, msg proto.Message) error {
 		return errors.Wrap(err, "marshal json error")
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewReader(b))
+	data := string('[') + string(b) + string(']')
+  b_data := []byte(data)
+
+	req, err := http.NewRequest("POST", url, bytes.NewReader(b_data))
 	if err != nil {
 		return errors.Wrap(err, "new request error")
 	}
