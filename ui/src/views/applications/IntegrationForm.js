@@ -641,14 +641,13 @@ class KonkerIntegrationHeaderForm extends FormComponent {
             label="Header name"
             margin="normal"
             value={this.state.object.key || ""}
-            onChange={this.onChange}
             fullWidth
           />
         </Grid>
         <Grid item xs={7}>
           <TextField
             id="value"
-            label="Header value"
+            label="Token"
             margin="normal"
             value={this.state.object.value || ""}
             onChange={this.onChange}
@@ -656,9 +655,6 @@ class KonkerIntegrationHeaderForm extends FormComponent {
           />
         </Grid>
         <Grid item xs={1} className={this.props.classes.delete}>
-          <IconButton aria-label="delete" onClick={this.onDelete}>
-            <Delete />
-          </IconButton>
         </Grid>
       </Grid>
     );
@@ -673,7 +669,6 @@ class KonkerIntegrationForm extends FormComponent {
   constructor() {
     super();
     this.addHeader = this.addHeader.bind(this);
-    this.onDeleteHeader = this.onDeleteHeader.bind(this);
     this.onChangeHeader = this.onChangeHeader.bind(this);
   }
 
@@ -687,20 +682,15 @@ class KonkerIntegrationForm extends FormComponent {
 
     let object = this.state.object;
     object.headers.push({});
-
-    this.props.onChange(object);
-  }
-
-  onDeleteHeader(index) {
-    let object = this.state.object;
-    object.headers.splice(index, 1);
     this.props.onChange(object);
   }
 
   onChangeHeader(index, header) {
     let object = this.state.object;
     object.headers[index] = header;
-    this.props.onChange(object);
+    this.setState({
+      object: object,
+    });
   }
 
   render() {
@@ -712,19 +702,19 @@ class KonkerIntegrationForm extends FormComponent {
     if(object.headers === undefined) {
       object.headers = list;
       object.uplinkDataURL = "http://data.demo.konkerlabs.net/gateway/data/pub"
-    }  
+    } 
 
     let headers = [];
-    if (this.state.object.headers !== undefined) {
-      headers = this.state.object.headers.map((h, i) => <KonkerIntegrationHeaderForm key={i} index={i} object={h} onChange={this.onChangeHeader} onDelete={this.onDeleteHeader} />);
+    if (this.state.object !== undefined) {
+      headers = this.state.object.headers.map((h, i) => h.key.includes("Authorization") && <KonkerIntegrationHeaderForm key={i} index={i} object={h} onChange={this.onChangeHeader}/>);
     }
+    
     return(
       <div>
         <FormControl fullWidth margin="normal">
           <FormLabel>Headers</FormLabel> 
           {headers}
         </FormControl>
-        <Button variant="outlined" onClick={this.addHeader}>Add header</Button>
         <FormControl fullWidth margin="normal">
           <FormLabel>Endpoints</FormLabel>
           <TextField
