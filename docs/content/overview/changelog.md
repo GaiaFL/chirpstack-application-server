@@ -58,33 +58,111 @@ As the username has been replaced by email and to not leak email addresses, the
 autocomplete function has been removed and the exact email must be given when
 associating a given user with an organization.
 
-#### LoRa Cloud geolocation
+#### LoRa Cloud integration
+
+##### Geolocation
 
 This migrates the geolocation integration from ChirpStack Network Server to
 ChirpStack Application Server and allows a per-application integration 
-configuration. The current integration provides support for TDOA and RSSI
-based geolocation. This will be extended by future releases to also support
-the [LR1110](https://www.semtech.com/products/wireless-rf/lora-transceivers/lr1110)
-capabilities.
+configuration. The [LoRa Cloud](https://www.loracloud.com/) Geolocation integration
+provides support for TDOA, RSSI, Wifi and [LR1110](https://www.semtech.com/products/wireless-rf/lora-transceivers/lr1110)
+based GNSS geolocation.
+
+##### DAS
+
+This implements the integration with the [LoRa Cloud](https://www.loracloud.com/)
+Device & Application Services.
 
 #### Disable device
 
 This feature makes it possible to (temporarily) disable a device.
+
+#### Kafka integration
+
+This (global) integration makes it possible to forward events to a Kafka
+broker.
+
+#### Gateway client-certificates
+
+When also configured in [ChirpStack Network Server](https://www.chirpstack.io/network-server/)
+this makes it possible to generate per-gateway client-certificates which can
+be used to implement gateway authentication and authorization. For example a
+MQTT broker can be configured to validate the client-certificate against
+a pre-configured CA certificate and if valid it can use the CommonName of the
+certificate (which contains the gateway ID) to authorize publish / subscribe
+to certain topics.
+
+
+#### Support max gateway / device option
+
+This option makes it possible to configure the maximum gateways and devices
+that can be created per organization.
+
+#### Integrations
+
+##### Cloud integrations
+
+It is now possible to configuring per-application integrations
+for [AWS SNS](https://aws.amazon.com/sns/), [Azure Service-Bus](https://azure.microsoft.com/en-us/services/service-bus/)
+and [GCP Pub/Sub](https://cloud.google.com/pubsub)
+
+##### Web-interface
+
+The interface to configure per-application configurations has been re-implemented.
+
+##### Single HTTP integration endpoint
+
+This updates the HTTP integration with a single endpoint configuration. Instead of configuring
+a per-event endpoint, this makes it possible to have a single endpoint to which all events
+are posted, with the `event` as query parameter.
+
+This update makes it also possible to configure the marshaler (JSON, Protocol Buffers
+and legacy JSON v3) per HTTP integration.
+
+Already configured HTTP integrations are not affected by this update but it is recommended
+to update your configuration so that you will automatically receive new
+event-types when they are introduced.
+
+##### MQTT topic configuration
+
+The MQTT integration has been updated with new MQTT topic configuration. Instead
+of configuring each topic separately, an `event_topic_template` template can be
+configured, which is used for all events. The command topic(s) can now be
+configured through the `command_topic_template` variable. In case the old
+configuration is still present, then the old topic configuration will remain
+active for backwards compatibility.
+
+**Important:**
+
+For consistency with the other components, the new configuration does introduce
+a change in MQTT topics (default configuration):
+
+* `application/[ApplicationID]/device/[DevEUI]/rx` -> `application/[ApplicationID]/device/[DevEUI]/event/up`
+* `application/[ApplicationID]/device/[DevEUI]/join` -> `application/[ApplicationID]/device/[DevEUI]/event/join`
+* `application/[ApplicationID]/device/[DevEUI]/ack` -> `application/[ApplicationID]/device/[DevEUI]/event/ack`
+* `application/[ApplicationID]/device/[DevEUI]/error` -> `application/[ApplicationID]/device/[DevEUI]/event/error`
+* `application/[ApplicationID]/device/[DevEUI]/status` -> `application/[ApplicationID]/device/[DevEUI]/event/status`
+* `application/[ApplicationID]/device/[DevEUI]/txack` -> `application/[ApplicationID]/device/[DevEUI]/event/txack`
+* `application/[ApplicationID]/device/[DevEUI]/location` -> `application/[ApplicationID]/device/[DevEUI]/event/location`
+* `application/[ApplicationID]/device/[DevEUI]/tx` -> `application/[ApplicationID]/device/[DevEUI]/command/down`
 
 ### Improvements
 
 * Make it possible to use activate API endpoint for OTAA devices (to import an existing activation).
 * Gateway Profile / channel-plan re-configuration documentation in web-interface.
 * Internal cleanup auto-complete select in web-interface.
+* Remove links in web-interface which could cause a logout due to user-permissions.
 * Expose (un)confirmed + DevAddr in integration payloads. ([#453](https://github.com/brocaar/chirpstack-application-server/issues/453))
 * Highlight rlow when hovering over table rows in web-interface. ([#474](https://github.com/brocaar/chirpstack-application-server/pull/474))
 * Include Network Server name column in Device- and Service Profile list. ([#475](https://github.com/brocaar/chirpstack-application-server/pull/475))
 * Include RSSI and SNR in ThingsBoard integration. ([#478](https://github.com/brocaar/chirpstack-application-server/pull/478/))
 * Align Gateway detail overview styling. ([#480](https://github.com/brocaar/chirpstack-application-server/pull/480/))
+* Makefile changes to speed up tests. ([#493](https://github.com/brocaar/chirpstack-application-server/pull/493))
 
 ### Bugfixes
 
 * Fix delete icon in gateway-profile UI (was showing + icon instead of delete).
+* Add missing error check in AWS SNS integration. ([#483](https://github.com/brocaar/chirpstack-application-server/pull/483))
 
 ## v3.10.0
 

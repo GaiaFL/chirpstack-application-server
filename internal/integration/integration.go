@@ -16,6 +16,7 @@ import (
 	"github.com/brocaar/chirpstack-application-server/internal/integration/gcppubsub"
 	"github.com/brocaar/chirpstack-application-server/internal/integration/http"
 	"github.com/brocaar/chirpstack-application-server/internal/integration/influxdb"
+	"github.com/brocaar/chirpstack-application-server/internal/integration/kafka"
 	"github.com/brocaar/chirpstack-application-server/internal/integration/logger"
 	"github.com/brocaar/chirpstack-application-server/internal/integration/loracloud"
 	"github.com/brocaar/chirpstack-application-server/internal/integration/marshaler"
@@ -30,12 +31,15 @@ import (
 
 // Handler kinds
 const (
-	HTTP        = "HTTP"
-	InfluxDB    = "INFLUXDB"
-	ThingsBoard = "THINGSBOARD"
-	MyDevices   = "MYDEVICES"
-	LoRaCloud   = "LORACLOUD"
-	Konker = "KONKER"
+	HTTP            = "HTTP"
+	InfluxDB        = "INFLUXDB"
+	ThingsBoard     = "THINGSBOARD"
+	MyDevices       = "MYDEVICES"
+	LoRaCloud       = "LORACLOUD"
+	GCPPubSub       = "GCP_PUBSUB"
+	AWSSNS          = "AWS_SNS"
+	AzureServiceBus = "AZURE_SERVICE_BUS"
+	Konker          = "KONKER"
 )
 
 var (
@@ -81,6 +85,8 @@ func Setup(conf config.Config) error {
 			i, err = mqtt.New(marshalType, conf.ApplicationServer.Integration.MQTT)
 		case "gcp_pub_sub":
 			i, err = gcppubsub.New(marshalType, conf.ApplicationServer.Integration.GCPPubSub)
+		case "kafka":
+			i, err = kafka.New(marshalType, conf.ApplicationServer.Integration.Kafka)
 		case "postgresql":
 			i, err = postgresql.New(conf.ApplicationServer.Integration.PostgreSQL)
 		case "amqp":
@@ -192,14 +198,49 @@ func ForApplicationID(id int64) models.Integration {
 
 			// create new loracloud integration
 			i, err = loracloud.New(conf)
+		case GCPPubSub:
+			// read config
+			var conf config.IntegrationGCPConfig
+			if err := json.NewDecoder(bytes.NewReader(appint.Settings)).Decode(&conf); err != nil {
+				log.WithError(err).WithFields(log.Fields{
+					"application_id": id,
+				}).Error("integrtations: read gcp pubsub configuration error")
+				continue
+			}
 
+			// create new gcp pubsub integration
+			i, err = gcppubsub.New(marshalType, conf)
+		case AWSSNS:
+			// read config
+			var conf config.IntegrationAWSSNSConfig
+			if err := json.NewDecoder(bytes.NewReader(appint.Settings)).Decode(&conf); err != nil {
+				log.WithError(err).WithFields(log.Fields{
+					"application_id": id,
+				}).Error("integrtations: read aws sns configuration error")
+				continue
+			}
+
+			// create new aws sns integration
+			i, err = awssns.New(marshalType, conf)
+		case AzureServiceBus:
+			// read config
+			var conf config.IntegrationAzureConfig
+			if err := json.NewDecoder(bytes.NewReader(appint.Settings)).Decode(&conf); err != nil {
+				log.WithError(err).WithFields(log.Fields{
+					"application_id": id,
+				}).Error("integrtations: read azure service-bus configuration error")
+				continue
+			}
+
+			// create new aws sns integration
+			i, err = azureservicebus.New(marshalType, conf)
 		case Konker:
 			// read config
 			var conf http.Config
 			if err := json.NewDecoder(bytes.NewReader(appint.Settings)).Decode(&conf); err != nil {
 				log.WithError(err).WithFields(log.Fields{
 					"application_id": id,
-				}).Error("integrtations: read loracloud configuration error")
+				}).Error("integrtations: read konker configuration error")
 				continue
 			}
 

@@ -34,7 +34,7 @@ func NewInternalAPI(validator auth.Validator) *InternalAPI {
 
 // Login validates the login request and returns a JWT token.
 func (a *InternalAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
-	jwt, err := storage.LoginUserByPassword(ctx, storage.DB(), req.Username, req.Password)
+	jwt, err := storage.LoginUserByPassword(ctx, storage.DB(), req.Email, req.Password)
 	if nil != err {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -182,6 +182,10 @@ func (a *InternalAPI) CreateAPIKey(ctx context.Context, req *pb.CreateAPIKeyRequ
 		IsAdmin:        apiKey.GetIsAdmin(),
 		OrganizationID: organizationID,
 		ApplicationID:  applicationID,
+	}
+
+	if !ak.IsAdmin && ak.OrganizationID == nil && ak.ApplicationID == nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "the api key must be either of type admin, organization or application")
 	}
 
 	jwtToken, err := storage.CreateAPIKey(ctx, storage.DB(), &ak)

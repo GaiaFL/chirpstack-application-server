@@ -14,7 +14,7 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver"
 	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/lorawan/backend"
+	"github.com/brocaar/lorawan/band"
 )
 
 func TestDeviceProfileValidate(t *testing.T) {
@@ -30,6 +30,17 @@ func TestDeviceProfileValidate(t *testing.T) {
 		{
 			DeviceProfile: DeviceProfile{
 				Name: "",
+			},
+			Error: ErrDeviceProfileInvalidName,
+		},
+		{
+			DeviceProfile: DeviceProfile{
+				Name: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+			},
+		},
+		{
+			DeviceProfile: DeviceProfile{
+				Name: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 			},
 			Error: ErrDeviceProfileInvalidName,
 		},
@@ -101,7 +112,7 @@ func (ts *StorageTestSuite) TestDeviceProfile() {
 				MaxEirp:            14,
 				MaxDutyCycle:       10,
 				SupportsJoin:       true,
-				RfRegion:           string(backend.EU868),
+				RfRegion:           string(band.EU868),
 				Supports_32BitFCnt: true,
 			},
 		}
@@ -305,7 +316,7 @@ func (ts *StorageTestSuite) TestDeviceProfile() {
 				MaxEirp:            17,
 				MaxDutyCycle:       1,
 				SupportsJoin:       true,
-				RfRegion:           string(backend.EU868),
+				RfRegion:           string(band.EU868),
 				Supports_32BitFCnt: true,
 			}
 			assert.NoError(UpdateDeviceProfile(context.Background(), ts.Tx(), &dp))

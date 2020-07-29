@@ -61,8 +61,6 @@ import CreateGateway from "./views/gateways/CreateGateway";
 import ListApplications from "./views/applications/ListApplications";
 import CreateApplication from "./views/applications/CreateApplication";
 import ApplicationLayout from "./views/applications/ApplicationLayout";
-import CreateIntegration from "./views/applications/CreateIntegration";
-import UpdateIntegration from "./views/applications/UpdateIntegration";
 
 // multicast-groups
 import ListMulticastGroups from "./views/multicast-groups/ListMulticastGroups";
@@ -84,6 +82,8 @@ import FUOTADeploymentLayout from "./views/fuota/FUOTADeploymentLayout";
 // API Keys
 import ListAdminAPIKeys from "./views/api-keys/ListAdminAPIKeys";
 import CreateAdminAPIKey from "./views/api-keys/CreateAdminAPIKey";
+import ListOrganizationAPIKeys from "./views/api-keys/ListOrganizationAPIKeys";
+import CreateOrganizationAPIKey from "./views/api-keys/CreateOrganizationAPIKey";
 
 
 const drawerWidth = 270;
@@ -186,6 +186,9 @@ class App extends Component {
                     <Route exact path="/api-keys" component={ListAdminAPIKeys} />
                     <Route exact path="/api-keys/create" component={CreateAdminAPIKey} />
 
+                    <Route exact path="/organizations/:organizationID(\d+)/api-keys" component={ListOrganizationAPIKeys} />
+                    <Route exact path="/organizations/:organizationID(\d+)/api-keys/create" component={CreateOrganizationAPIKey} />
+
                     <Route exact path="/organizations/:organizationID(\d+)/service-profiles" component={ListServiceProfiles} />
                     <Route exact path="/organizations/:organizationID(\d+)/service-profiles/create" component={CreateServiceProfile} />
                     <Route path="/organizations/:organizationID(\d+)/service-profiles/:serviceProfileID([\w-]{36})" component={ServiceProfileLayout} />
@@ -200,8 +203,6 @@ class App extends Component {
 
                     <Route exact path="/organizations/:organizationID(\d+)/applications" component={ListApplications} />
                     <Route exact path="/organizations/:organizationID(\d+)/applications/create" component={CreateApplication} />
-                    <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/integrations/create" component={CreateIntegration} />
-                    <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/integrations/:kind" component={UpdateIntegration} />
                     <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/create" component={CreateDevice} />
                     <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/:devEUI([\w]{16})/fuota-deployments/create" component={CreateFUOTADeploymentForDevice} />
                     <Route path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/fuota-deployments/:fuotaDeploymentID([\w-]{36})" component={FUOTADeploymentLayout} />

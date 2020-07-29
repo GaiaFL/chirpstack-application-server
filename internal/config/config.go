@@ -56,6 +56,7 @@ type Config struct {
 			AzureServiceBus IntegrationAzureConfig      `mapstructure:"azure_service_bus"`
 			MQTT            IntegrationMQTTConfig       `mapstructure:"mqtt"`
 			GCPPubSub       IntegrationGCPConfig        `mapstructure:"gcp_pub_sub"`
+			Kafka           IntegrationKafkaConfig      `mapstructure:"kafka"`
 			PostgreSQL      IntegrationPostgreSQLConfig `mapstructure:"postgresql"`
 			AMQP            IntegrationAMQPConfig       `mapstructure:"amqp"`
 		} `mapstructure:"integration"`
@@ -141,53 +142,64 @@ type Config struct {
 
 // IntegrationMQTTConfig holds the configuration for the MQTT integration.
 type IntegrationMQTTConfig struct {
-	Server                  string        `mapstructure:"server"`
-	Username                string        `mapstructure:"username"`
-	Password                string        `mapstructure:"password"`
-	MaxReconnectInterval    time.Duration `mapstructure:"max_reconnect_interval"`
-	QOS                     uint8         `mapstructure:"qos"`
-	CleanSession            bool          `mapstructure:"clean_session"`
-	ClientID                string        `mapstructure:"client_id"`
-	CACert                  string        `mapstructure:"ca_cert"`
-	TLSCert                 string        `mapstructure:"tls_cert"`
-	TLSKey                  string        `mapstructure:"tls_key"`
-	UplinkTopicTemplate     string        `mapstructure:"uplink_topic_template"`
-	DownlinkTopicTemplate   string        `mapstructure:"downlink_topic_template"`
-	JoinTopicTemplate       string        `mapstructure:"join_topic_template"`
-	AckTopicTemplate        string        `mapstructure:"ack_topic_template"`
-	ErrorTopicTemplate      string        `mapstructure:"error_topic_template"`
-	StatusTopicTemplate     string        `mapstructure:"status_topic_template"`
-	LocationTopicTemplate   string        `mapstructure:"location_topic_template"`
-	TxAckTopicTemplate      string        `mapstructure:"tx_ack_topic_template"`
-	UplinkRetainedMessage   bool          `mapstructure:"uplink_retained_message"`
-	JoinRetainedMessage     bool          `mapstructure:"join_retained_message"`
-	AckRetainedMessage      bool          `mapstructure:"ack_retained_message"`
-	ErrorRetainedMessage    bool          `mapstructure:"error_retained_message"`
-	StatusRetainedMessage   bool          `mapstructure:"status_retained_message"`
-	LocationRetainedMessage bool          `mapstructure:"location_retained_message"`
-	TxAckRetainedMessage    bool          `mapstructure:"tx_ack_retained_message"`
+	Server               string        `mapstructure:"server"`
+	Username             string        `mapstructure:"username"`
+	Password             string        `mapstructure:"password"`
+	MaxReconnectInterval time.Duration `mapstructure:"max_reconnect_interval"`
+	QOS                  uint8         `mapstructure:"qos"`
+	CleanSession         bool          `mapstructure:"clean_session"`
+	ClientID             string        `mapstructure:"client_id"`
+	CACert               string        `mapstructure:"ca_cert"`
+	TLSCert              string        `mapstructure:"tls_cert"`
+	TLSKey               string        `mapstructure:"tls_key"`
+	EventTopicTemplate   string        `mapstructure:"event_topic_template"`
+	CommandTopicTemplate string        `mapstructure:"command_topic_template"`
+	RetainEvents         bool          `mapstructure:"retain_events"`
+
+	// For backards compatibility
+	UplinkTopicTemplate        string `mapstructure:"uplink_topic_template"`
+	DownlinkTopicTemplate      string `mapstructure:"downlink_topic_template"`
+	JoinTopicTemplate          string `mapstructure:"join_topic_template"`
+	AckTopicTemplate           string `mapstructure:"ack_topic_template"`
+	ErrorTopicTemplate         string `mapstructure:"error_topic_template"`
+	StatusTopicTemplate        string `mapstructure:"status_topic_template"`
+	LocationTopicTemplate      string `mapstructure:"location_topic_template"`
+	TxAckTopicTemplate         string `mapstructure:"tx_ack_topic_template"`
+	IntegrationTopicTemplate   string `mapstructure:"integration_topic_template"`
+	UplinkRetainedMessage      bool   `mapstructure:"uplink_retained_message"`
+	JoinRetainedMessage        bool   `mapstructure:"join_retained_message"`
+	AckRetainedMessage         bool   `mapstructure:"ack_retained_message"`
+	ErrorRetainedMessage       bool   `mapstructure:"error_retained_message"`
+	StatusRetainedMessage      bool   `mapstructure:"status_retained_message"`
+	LocationRetainedMessage    bool   `mapstructure:"location_retained_message"`
+	TxAckRetainedMessage       bool   `mapstructure:"tx_ack_retained_message"`
+	IntegrationRetainedMessage bool   `mapstructure:"integration_retained_message"`
 }
 
 // IntegrationAWSSNSConfig holds the AWS SNS integration configuration.
 type IntegrationAWSSNSConfig struct {
-	AWSRegion          string `mapstructure:"aws_region"`
-	AWSAccessKeyID     string `mapstructure:"aws_access_key_id"`
-	AWSSecretAccessKey string `mapstructure:"aws_secret_access_key"`
-	TopicARN           string `mapstructure:"topic_arn"`
+	Marshaler          string `mapstructure:"marshaler" json:"marshaler"`
+	AWSRegion          string `mapstructure:"aws_region" json:"region"`
+	AWSAccessKeyID     string `mapstructure:"aws_access_key_id" json:"accessKeyID"`
+	AWSSecretAccessKey string `mapstructure:"aws_secret_access_key" json:"secretAccessKey"`
+	TopicARN           string `mapstructure:"topic_arn" json:"topicARN"`
 }
 
 // IntegrationAzureConfig holds the Azure Service-Bus integration configuration.
 type IntegrationAzureConfig struct {
-	ConnectionString string           `mapstructure:"connection_string"`
-	PublishMode      AzurePublishMode `mapstructure:"publish_mode"`
-	PublishName      string           `mapstructure:"publish_name"`
+	Marshaler        string           `mapstructure:"marshaler" json:"marshaler"`
+	ConnectionString string           `mapstructure:"connection_string" json:"connectionString"`
+	PublishMode      AzurePublishMode `mapstructure:"publish_mode" json:"-"`
+	PublishName      string           `mapstructure:"publish_name" json:"publishName"`
 }
 
 // IntegrationGCPConfig holds the GCP Pub/Sub integration configuration.
 type IntegrationGCPConfig struct {
-	CredentialsFile string `mapstructure:"credentials_file"`
-	ProjectID       string `mapstructure:"project_id"`
-	TopicName       string `mapstructure:"topic_name"`
+	Marshaler            string `mapstructure:"marshaler" json:"marshaler"`
+	CredentialsFile      string `mapstructure:"credentials_file" json:"-"`
+	CredentialsFileBytes []byte `mapstructure:"-" json:"credentialsFile"`
+	ProjectID            string `mapstructure:"project_id" json:"projectID"`
+	TopicName            string `mapstructure:"topic_name" json:"topicName"`
 }
 
 // IntegrationPostgreSQLConfig holds the PostgreSQL integration configuration.
@@ -201,6 +213,13 @@ type IntegrationPostgreSQLConfig struct {
 type IntegrationAMQPConfig struct {
 	URL                     string `mapstructure:"url"`
 	EventRoutingKeyTemplate string `mapstructure:"event_routing_key_template"`
+}
+
+// IntegrationKafkaConfig holds the Kafka integration configuration.
+type IntegrationKafkaConfig struct {
+	Brokers          []string `mapstructure:"brokers"`
+	Topic            string   `mapstructure:"topic"`
+	EventKeyTemplate string   `mapstructure:"event_key_template"`
 }
 
 // AzurePublishMode defines the publish-mode type.

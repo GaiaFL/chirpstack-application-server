@@ -14,7 +14,7 @@ import (
 	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver"
 	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver/mock"
 	"github.com/brocaar/lorawan"
-	"github.com/brocaar/lorawan/backend"
+	"github.com/brocaar/lorawan/band"
 )
 
 func (ts *StorageTestSuite) TestDevice() {
@@ -85,7 +85,7 @@ func (ts *StorageTestSuite) TestDevice() {
 			MaxEirp:            14,
 			MaxDutyCycle:       10,
 			SupportsJoin:       true,
-			RfRegion:           string(backend.EU868),
+			RfRegion:           string(band.EU868),
 			Supports_32BitFCnt: true,
 		},
 	}
@@ -153,6 +153,18 @@ func (ts *StorageTestSuite) TestDevice() {
 			assert.Len(devices, 1)
 
 			count, err := GetDeviceCount(context.Background(), ts.Tx(), DeviceFilters{})
+			assert.NoError(err)
+			assert.Equal(1, count)
+		})
+
+		t.Run("List by OrganizationID", func(t *testing.T) {
+			assert := require.New(t)
+
+			devices, err := GetDevices(context.Background(), ts.Tx(), DeviceFilters{Limit: 10, OrganizationID: org.ID})
+			assert.NoError(err)
+			assert.Len(devices, 1)
+
+			count, err := GetDeviceCount(context.Background(), ts.Tx(), DeviceFilters{OrganizationID: org.ID})
 			assert.NoError(err)
 			assert.Equal(1, count)
 		})

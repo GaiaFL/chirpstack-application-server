@@ -31,6 +31,17 @@ type Integration struct {
 
 // New creates a new AWS SNS integration.
 func New(m marshaler.Type, conf config.IntegrationAWSSNSConfig) (*Integration, error) {
+	if conf.Marshaler != "" {
+		switch conf.Marshaler {
+		case "PROTOBUF":
+			m = marshaler.Protobuf
+		case "JSON":
+			m = marshaler.ProtobufJSON
+		case "JSON_V3":
+			m = marshaler.JSONV3
+		}
+	}
+
 	i := Integration{
 		marshaler: m,
 		topicARN:  conf.TopicARN,
@@ -45,14 +56,6 @@ func New(m marshaler.Type, conf config.IntegrationAWSSNSConfig) (*Integration, e
 		return nil, errors.Wrap(err, "new session error")
 	}
 	i.sns = sns.New(sess)
-
-	log.WithField("topic_arn", i.topicARN).Info("integration/awssns: testing if topic exists")
-	_, err = i.sns.GetTopicAttributes(&sns.GetTopicAttributesInput{
-		TopicArn: aws.String(i.topicARN),
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "get topic error")
-	}
 
 	return &i, nil
 }
@@ -90,6 +93,11 @@ func (i *Integration) HandleLocationEvent(ctx context.Context, _ models.Integrat
 // HandleTxAckEvent sends a TxAckEevent.
 func (i *Integration) HandleTxAckEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.TxAckEvent) error {
 	return i.publish(ctx, "txack", pl.ApplicationId, pl.DevEui, &pl)
+}
+
+// HandleIntegrationEvent sends an IntegrationEvent.
+func (i *Integration) HandleIntegrationEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.IntegrationEvent) error {
+	return i.publish(ctx, "integration", pl.ApplicationId, pl.DevEui, &pl)
 }
 
 // DataDownChan return nil.

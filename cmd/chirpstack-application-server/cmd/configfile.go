@@ -203,42 +203,25 @@ id="{{ .ApplicationServer.ID }}"
   # * aws_sns           - AWS Simple Notification Service (SNS)
   # * azure_service_bus - Azure Service-Bus
   # * gcp_pub_sub       - Google Cloud Pub/Sub
+  # * kafka             - Kafka distributed streaming platform
   # * postgresql        - PostgreSQL database
   enabled=[{{ if .ApplicationServer.Integration.Enabled|len }}"{{ end }}{{ range $index, $elm := .ApplicationServer.Integration.Enabled }}{{ if $index }}", "{{ end }}{{ $elm }}{{ end }}{{ if .ApplicationServer.Integration.Enabled|len }}"{{ end }}]
 
 
   # MQTT integration backend.
   [application_server.integration.mqtt]
-  # MQTT topic templates for the different MQTT topics.
-  #
-  # The meaning of these topics are documented at:
-  # https://www.chirpstack.io/application-server/integrate/data/
-  #
-  # The following substitutions can be used:
-  # * "{{ "{{ .ApplicationID }}" }}" for the application id.
-  # * "{{ "{{ .DevEUI }}" }}" for the DevEUI of the device.
-  #
-  # Note: the downlink_topic_template must contain both the application id and
-  # DevEUI substitution!
-  uplink_topic_template="{{ .ApplicationServer.Integration.MQTT.UplinkTopicTemplate }}"
-  downlink_topic_template="{{ .ApplicationServer.Integration.MQTT.DownlinkTopicTemplate }}"
-  join_topic_template="{{ .ApplicationServer.Integration.MQTT.JoinTopicTemplate }}"
-  ack_topic_template="{{ .ApplicationServer.Integration.MQTT.AckTopicTemplate }}"
-  error_topic_template="{{ .ApplicationServer.Integration.MQTT.ErrorTopicTemplate }}"
-  status_topic_template="{{ .ApplicationServer.Integration.MQTT.StatusTopicTemplate }}"
-  location_topic_template="{{ .ApplicationServer.Integration.MQTT.LocationTopicTemplate }}"
+  # Event topic template.
+  event_topic_template="{{ .ApplicationServer.Integration.MQTT.EventTopicTemplate }}"
 
-  # Retained messages configuration.
+  # Command topic template.
+  command_topic_template="{{ .ApplicationServer.Integration.MQTT.CommandTopicTemplate }}"
+
+  # Retain events.
   #
-  # The MQTT broker will store the last publised message, when retained message is set
-  # to true. When a client subscribes to a topic with retained message set to true, it will
-  # always receive the last published message.
-  uplink_retained_message={{ .ApplicationServer.Integration.MQTT.UplinkRetainedMessage }}
-  join_retained_message={{ .ApplicationServer.Integration.MQTT.JoinRetainedMessage }}
-  ack_retained_message={{ .ApplicationServer.Integration.MQTT.AckRetainedMessage }}
-  error_retained_message={{ .ApplicationServer.Integration.MQTT.ErrorRetainedMessage }}
-  status_retained_message={{ .ApplicationServer.Integration.MQTT.StatusRetainedMessage }}
-  location_retained_message={{ .ApplicationServer.Integration.MQTT.LocationRetainedMessage }}
+  # The MQTT broker will store the last publised message, when retain events is set
+  # to true. When a MQTT client connects and subscribes, it will always receive the
+  # last published message.
+  retain_events={{ .ApplicationServer.Integration.MQTT.RetainEvents }}
 
   # MQTT server (e.g. scheme://host:port where scheme is tcp, ssl or ws)
   server="{{ .ApplicationServer.Integration.MQTT.Server }}"
@@ -356,6 +339,23 @@ id="{{ .ApplicationServer.ID }}"
 
   # Pub/Sub topic name.
   topic_name="{{ .ApplicationServer.Integration.GCPPubSub.TopicName }}"
+
+
+  # Kafka integration.
+  [application_server.integration.kafka]
+  # Brokers, e.g.: localhost:9092.
+  brokers=[{{ range $index, $broker := .ApplicationServer.Integration.Kafka.Brokers }}{{ if $index }}, {{ end }}"{{ $broker }}"{{ end }}]
+
+  # Topic for events.
+  topic="{{ .ApplicationServer.Integration.Kafka.Topic }}"
+
+  # Template for keys included in Kafka messages. If empty, no key is included.
+  # Kafka uses the key for distributing messages over partitions. You can use
+  # this to ensure some subset of messages end up in the same partition, so
+  # they can be consumed in-order. And Kafka can use the key for data retention
+  # decisions.  A header "event" with the event type is included in each
+  # message. There is no need to parse it from the key.
+  event_key_template="{{ .ApplicationServer.Integration.Kafka.EventKeyTemplate }}"
 
 
   # PostgreSQL database integration.

@@ -1,5 +1,5 @@
 .PHONY: build clean test ui-requirements serve internal/statics internal/migrations 
-PKGS := $(shell go list ./... | grep -v /vendor |grep -v chirpstack-application-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
+PKGS := $(shell go list ./cmd/... ./internal/... | grep -v /vendor |grep -v /internal/static |grep -v /internal/migrations)
 VERSION := $(shell git describe --always |sed -e "s/^v//")
 API_VERSION := $(shell go list -m -f '{{ .Version }}' github.com/brocaar/chirpstack-api/go/v3 | awk '{n=split($$0, a, "-"); print a[n]}')
 
@@ -12,6 +12,7 @@ clean:
 	@rm -rf build dist internal/migrations/migrations_gen.go internal/static/static_gen.go ui/build static/static
 	@rm -f static/index.html static/icon.png static/manifest.json static/asset-manifest.json static/service-worker.js
 	@rm -rf static/logo
+	@rm -rf static/integrations
 	@rm -rf static/swagger/*.json
 	@rm -rf docs/public
 	@rm -rf dist
